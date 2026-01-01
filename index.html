@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ham Radio India 2025: The Spectrum & The Hobby</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 350px; }
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .active-tab {
+            border-bottom: 2px solid #d97706;
+            color: #92400e;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals & Radio Amber. Background: Stone-50. Accents: Amber-600, Stone-800. -->
+    <!-- Application Structure Plan:
+         1. Hero: Hook the user with the concept of "The Magic of Radio".
+         2. The Physics (Spectrum): Interactive Chart.js visualization of bands (HF/VHF/UHF) mapped to their behavior.
+         3. Interactive Calculator: Frequency <-> Wavelength converter (Core concept).
+         4. Licensing in India (The How-To): Tabbed interface for Grades, Donut chart for Exam syllabus.
+         5. Roadmap 2025: Vertical stepper for the application process via Saral Sanchar.
+         6. Resources: Grid of study links.
+         This structure moves from "Theory/Interest" -> "Understanding" -> "Actionable Steps".
+    -->
+    <!-- Visualization & Content Choices:
+         - Spectrum Explorer: Bar Chart. Goal: Inform/Compare. Shows range/utility of different bands. No SVG.
+         - Exam Syllabus: Doughnut Chart. Goal: Inform. Shows weightage of topics.
+         - Wavelength Calc: JS Logic. Goal: Engage/Teach.
+         - Process Flow: HTML/CSS Stepper. Goal: Organize.
+         - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+</head>
+<body class="bg-stone-50 text-stone-800 selection:bg-amber-200">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-stone-100/90 backdrop-blur border-b border-stone-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold tracking-tight text-stone-900">HAM RADIO<span class="text-amber-600"> by </span>BHARATH</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <button onclick="scrollToSection('hero')" class="hover:text-amber-700 transition-colors">Home</button>
+                    <button onclick="scrollToSection('spectrum')" class="hover:text-amber-700 transition-colors">The Spectrum</button>
+                    <button onclick="scrollToSection('calculator')" class="hover:text-amber-700 transition-colors">Calculator</button>
+                    <button onclick="scrollToSection('licensing')" class="hover:text-amber-700 transition-colors">Get Licensed</button>
+                    <button onclick="scrollToSection('resources')" class="hover:text-amber-700 transition-colors">Resources</button>
+                </div>
+                <!-- Mobile menu button (simple toggle logic not shown for brevity, main nav is priority) -->
+                <div class="md:hidden flex items-center">
+                    <button class="text-stone-600 font-bold" onclick="alert('Please scroll down to explore sections!')">MENU</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
+        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-stone-900 mb-6">
+            Discover the World of <span class="text-amber-600">Amateur Radio</span>
+        </h1>
+        <p class="max-w-2xl mx-auto text-xl text-stone-600 mb-10">
+            More than just a hobby. It's the science of the electromagnetic spectrum, the art of communication, and a vital lifeline during emergencies.
+            <br><br>
+            <strong>Your journey to becoming a "Ham" in India starts here.</strong>
+        </p>
+        <div class="flex justify-center gap-4">
+            <button onclick="scrollToSection('spectrum')" class="bg-stone-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-stone-700 transition shadow-lg">Explore the Physics</button>
+            <button onclick="scrollToSection('licensing')" class="bg-white text-amber-700 border border-amber-200 px-8 py-3 rounded-lg font-semibold hover:bg-amber-50 transition shadow-md">Get My License</button>
+        </div>
+    </section>
+
+    <!-- Spectrum & Physics Section -->
+    <section id="spectrum" class="py-16 bg-white border-y border-stone-200">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="mb-10 text-center max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-stone-900 mb-4">The Electromagnetic Spectrum</h2>
+                <p class="text-stone-600">
+                    Ham radio operators are masters of the RF (Radio Frequency) spectrum. Understanding how different frequencies behave is key to making contacts locally or globally.
+                    Interact with the chart below to understand the "Personality" of different bands.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <!-- Chart Col -->
+                <div class="bg-stone-50 p-6 rounded-xl shadow-inner">
+                    <h3 class="text-lg font-semibold mb-4 text-center">Relative Range & Ionospheric Bounce</h3>
+                    <div class="chart-container">
+                        <canvas id="spectrumChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-stone-500 mt-2">Click bars for details • Data represents typical utility.</p>
+                </div>
+
+                <!-- Info Col -->
+                <div>
+                    <div id="band-details" class="bg-amber-50 border border-amber-100 p-8 rounded-xl shadow-sm transition-all duration-300">
+                        <h3 class="text-2xl font-bold text-amber-800 mb-2" id="band-title">Select a Band</h3>
+                        <div class="text-sm font-mono text-stone-500 mb-4" id="band-freq">Frequency Range: --</div>
+                        <p class="text-stone-700 mb-4" id="band-desc">
+                            Click on a bar in the chart to learn about High Frequency (HF), Very High Frequency (VHF), or Ultra High Frequency (UHF) and how Hams use them.
+                        </p>
+                        <div class="grid grid-cols-2 gap-4 mt-6">
+                            <div class="bg-white p-4 rounded shadow-sm">
+                                <span class="block text-xs font-bold text-stone-400 uppercase">Primary Use</span>
+                                <span class="font-medium text-stone-800" id="band-use">--</span>
+                            </div>
+                            <div class="bg-white p-4 rounded shadow-sm">
+                                <span class="block text-xs font-bold text-stone-400 uppercase">Propagation</span>
+                                <span class="font-medium text-stone-800" id="band-prop">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Wavelength Calculator Section -->
+    <section id="calculator" class="py-16 bg-stone-50">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-stone-900">The Golden Rule: Frequency vs. Wavelength</h2>
+                <p class="text-stone-600 mt-2">
+                    In radio, as frequency goes <strong>up</strong>, the wavelength (size of the antenna needed) goes <strong>down</strong>.
+                    <br>Formula: <span class="font-mono bg-stone-200 px-1 rounded">λ (meters) ≈ 300 / f (MHz)</span>
+                </p>
+            </div>
+
+            <div class="glass-panel p-8 rounded-2xl shadow-lg max-w-lg mx-auto">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 mb-1">Frequency (MHz)</label>
+                        <input type="number" id="freqInput" placeholder="e.g., 145" class="w-full p-3 rounded-lg border border-stone-300 focus:ring-2 focus:ring-amber-500 outline-none font-mono text-lg" oninput="calculateWavelength('freq')">
+                    </div>
+                    
+                    <div class="flex items-center justify-center text-stone-400">
+                        <span class="text-2xl">⬇⬆</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-stone-700 mb-1">Wavelength (Meters)</label>
+                        <input type="number" id="waveInput" placeholder="e.g., 2" class="w-full p-3 rounded-lg border border-stone-300 focus:ring-2 focus:ring-amber-500 outline-none font-mono text-lg" oninput="calculateWavelength('wave')">
+                    </div>
+
+                    <div id="antenna-hint" class="bg-blue-50 text-blue-800 p-4 rounded-lg text-sm hidden">
+                        <!-- Dynamic hint injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Licensing Roadmap Section -->
+    <section id="licensing" class="py-16 bg-white border-t border-stone-200">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="mb-12 text-center">
+                <h2 class="text-3xl font-bold text-stone-900 mb-4">Getting Your License in India (2025)</h2>
+                <p class="max-w-2xl mx-auto text-stone-600">
+                    In India, the Amateur Station Operator's Certificate (ASOC) is conducted by the Wireless Planning and Coordination (WPC) Wing.
+                    You need to pass this exam to legally operate.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <!-- Exam Structure -->
+                <div>
+                    <h3 class="text-xl font-bold mb-6 flex items-center">
+                        <span class="bg-amber-100 text-amber-800 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
+                        Choose Your Grade
+                    </h3>
+                    
+                    <!-- Tabs -->
+                    <div class="flex space-x-6 border-b border-stone-200 mb-6">
+                        <button onclick="switchGradeTab('restricted')" id="tab-restricted" class="pb-2 text-stone-600 font-medium active-tab transition-all">Restricted Grade</button>
+                        <button onclick="switchGradeTab('general')" id="tab-general" class="pb-2 text-stone-400 font-medium hover:text-stone-600 transition-all">General Grade</button>
+                    </div>
+
+                    <div id="content-restricted" class="space-y-4">
+                        <p class="text-stone-700"><strong>Best for Beginners.</strong> Allows you to use VHF/UHF for local communication and limited HF power.</p>
+                        <ul class="space-y-2 text-sm text-stone-600">
+                            <li class="flex items-start"><span class="text-green-500 mr-2">✓</span> No Morse Code test required.</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">✓</span> Max Power: 10 Watts (HF), 25 Watts (VHF).</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">✓</span> Voice mode allowed on all allotted bands.</li>
+                        </ul>
+                    </div>
+
+                    <div id="content-general" class="space-y-4 hidden">
+                        <p class="text-stone-700"><strong>For Advanced Ops.</strong> Allows higher power and more frequency privileges.</p>
+                        <ul class="space-y-2 text-sm text-stone-600">
+                            <li class="flex items-start"><span class="text-amber-500 mr-2">⚠</span> Morse Code (receiving/sending) @ 8 wpm is traditionally required (Check latest WPC circulars as rules evolve).</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">✓</span> Max Power: 400 Watts.</li>
+                            <li class="flex items-start"><span class="text-green-500 mr-2">✓</span> Full access to satellite & experimental modes.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-8">
+                        <h4 class="text-sm font-bold text-stone-400 uppercase mb-3">Exam Syllabus Breakdown</h4>
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="examChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Process Steps -->
+                <div>
+                    <h3 class="text-xl font-bold mb-6 flex items-center">
+                        <span class="bg-amber-100 text-amber-800 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
+                        The Application Roadmap
+                    </h3>
+                    
+                    <div class="relative border-l-2 border-stone-200 ml-4 space-y-8">
+                        <!-- Step 1 -->
+                        <div class="ml-6 relative">
+                            <span class="absolute -left-[31px] top-0 bg-white border-2 border-stone-300 w-4 h-4 rounded-full"></span>
+                            <h4 class="font-bold text-stone-900">Register on Saral Sanchar</h4>
+                            <p class="text-sm text-stone-600 mt-1">Go to the DoT's <a href="#" class="text-amber-600 hover:underline">Saral Sanchar Portal</a>. Create a profile. This is the only official way to apply.</p>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="ml-6 relative">
+                            <span class="absolute -left-[31px] top-0 bg-white border-2 border-stone-300 w-4 h-4 rounded-full"></span>
+                            <h4 class="font-bold text-stone-900">Apply for ASOC Exam</h4>
+                            <p class="text-sm text-stone-600 mt-1">Select "Amateur Radio Exam". Choose your nearest monitoring station center. Pay the nominal fee (approx ₹100 via BharatKosh).</p>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="ml-6 relative">
+                            <span class="absolute -left-[31px] top-0 bg-white border-2 border-stone-300 w-4 h-4 rounded-full"></span>
+                            <h4 class="font-bold text-stone-900">Study & Pass</h4>
+                            <p class="text-sm text-stone-600 mt-1">Study electronics basics (Resistors, Ohm's law) and Regulations (Callsign blocks, Q-codes). The pass mark is usually 40-50%.</p>
+                        </div>
+                         <!-- Step 4 -->
+                         <div class="ml-6 relative">
+                            <span class="absolute -left-[31px] top-0 bg-white border-2 border-amber-500 w-4 h-4 rounded-full"></span>
+                            <h4 class="font-bold text-stone-900">Wait for License</h4>
+                            <p class="text-sm text-stone-600 mt-1">After passing, your result is processed. You then pay the license fee (20 years or lifetime). Download your digital license!</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 bg-stone-100 p-4 rounded-lg">
+                        <p class="text-xs font-bold text-stone-500 uppercase">Pro Tip</p>
+                        <p class="text-sm text-stone-700 italic">"Join a local Ham Radio club (like IIH or ARC in your city). They often conduct classes and help with the Saral Sanchar paperwork!"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Resources Section -->
+    <section id="resources" class="py-16 bg-stone-900 text-stone-300">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="text-2xl font-bold text-white mb-8 text-center">Research Resources</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-6 border border-stone-700 rounded-lg hover:border-amber-500 transition cursor-pointer">
+                    <h3 class="text-lg font-bold text-white mb-2">Government Portals</h3>
+                    <ul class="text-sm space-y-2">
+                        <li>• <a href="#" class="hover:text-amber-400">Saral Sanchar (DoT)</a></li>
+                        <li>• <a href="#" class="hover:text-amber-400">BharatKosh (Payments)</a></li>
+                        <li>• <a href="#" class="hover:text-amber-400">WPC Wing Website</a></li>
+                    </ul>
+                </div>
+                <div class="p-6 border border-stone-700 rounded-lg hover:border-amber-500 transition cursor-pointer">
+                    <h3 class="text-lg font-bold text-white mb-2">Study Material</h3>
+                    <ul class="text-sm space-y-2">
+                        <li>• <a href="#" class="hover:text-amber-400">HamRadioIndia.org</a></li>
+                        <li>• <a href="#" class="hover:text-amber-400">ARRL (General Theory)</a></li>
+                        <li>• <a href="#" class="hover:text-amber-400">YouTube: 'Ham Radio 2.0'</a></li>
+                    </ul>
+                </div>
+                <div class="p-6 border border-stone-700 rounded-lg hover:border-amber-500 transition cursor-pointer">
+                    <h3 class="text-lg font-bold text-white mb-2">Clubs in India</h3>
+                    <ul class="text-sm space-y-2">
+                        <li>• <a href="#" class="hover:text-amber-400">Indian Institute of Hams (IIH)</a></li>
+                        <li>• <a href="#" class="hover:text-amber-400">Amateur Radio Society of India (ARSI)</a></li>
+                        <li>• <a href="#" class="hover:text-amber-400">Bangalore Amateur Radio Club</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-stone-950 text-stone-500 py-8 text-center text-sm">
+        <p>&copy; 2025 Ham Radio Guide. Designed for aspiring operators.</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. Navigation Logic ---
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- 2. Chart Configurations ---
+        
+        // Spectrum Data
+        const spectrumData = {
+            labels: ['160m (HF)', '40m (HF)', '20m (HF)', '10m (HF)', '2m (VHF)', '70cm (UHF)'],
+            datasets: [{
+                label: 'Typical Global Reach (Skywave)',
+                data: [90, 80, 100, 60, 5, 2], // Conceptual scoring for Skywave
+                backgroundColor: 'rgba(217, 119, 6, 0.7)', // Amber
+                borderColor: 'rgba(217, 119, 6, 1)',
+                borderWidth: 1,
+                borderRadius: 4,
+                order: 1
+            }, {
+                label: 'Local Clarity (Line of Sight)',
+                data: [10, 20, 30, 50, 95, 100], // Conceptual scoring for LOS
+                backgroundColor: 'rgba(71, 85, 105, 0.7)', // Slate
+                borderColor: 'rgba(71, 85, 105, 1)',
+                borderWidth: 1,
+                borderRadius: 4,
+                order: 2
+            }]
+        };
+
+        const bandDetails = {
+            '160m (HF)': {
+                title: '160 Meters (1.8 MHz)',
+                range: '1.8 - 2.0 MHz',
+                desc: 'Often called the "Top Band". Best at night. Requires very large antennas. Behaves like AM broadcast radio.',
+                use: 'Local/Regional ragchewing at night.',
+                prop: 'Ground wave (local) + Skywave (night only).'
+            },
+            '40m (HF)': {
+                title: '40 Meters (7 MHz)',
+                range: '7.0 - 7.2 MHz',
+                desc: 'The workhorse of Ham radio. Good for inter-city communication during the day and international (DX) at night.',
+                use: 'Reliable communication, Emergency nets.',
+                prop: 'Strong Skywave reflection.'
+            },
+            '20m (HF)': {
+                title: '20 Meters (14 MHz)',
+                range: '14.0 - 14.35 MHz',
+                desc: 'The premier DX (Long Distance) band. Open to the world almost all day. Ships and planes used to use frequencies nearby.',
+                use: 'International contacts, Contesting.',
+                prop: 'Excellent Ionospheric bounce.'
+            },
+            '10m (HF)': {
+                title: '10 Meters (28 MHz)',
+                range: '28.0 - 29.7 MHz',
+                desc: 'Borderline HF/VHF. Opens up wildly during "Solar Maximum" (high sunspot activity) allowing global talk with low power.',
+                use: 'Tech experiments, unpredictable long distance.',
+                prop: 'Sporadic E, F-layer during solar max.'
+            },
+            '2m (VHF)': {
+                title: '2 Meters (144 MHz)',
+                range: '144 - 146 MHz (India)',
+                desc: 'The most popular band for beginners. Used for local handheld talk, repeaters, and even talking to the ISS!',
+                use: 'Local chats, Handheld radios, Satellites.',
+                prop: 'Line of Sight. Stops at horizon.'
+            },
+            '70cm (UHF)': {
+                title: '70 Centimeters (430 MHz)',
+                range: '430 - 440 MHz',
+                desc: 'Similar to 2m but penetrates buildings better. Frequencies are shared with other gadgets (LPD).',
+                use: 'Urban comms, Satellite links, Digital Data.',
+                prop: 'Strict Line of Sight. Penetrates windows/walls.'
+            }
+        };
+
+        // Initialize Spectrum Chart
+        const ctxSpec = document.getElementById('spectrumChart').getContext('2d');
+        const specChart = new Chart(ctxSpec, {
+            type: 'bar',
+            data: spectrumData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        title: { display: true, text: 'Signal Utility Score (Conceptual)' }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                onClick: (e) => {
+                    const points = specChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+                    if (points.length) {
+                        const firstPoint = points[0];
+                        const label = specChart.data.labels[firstPoint.index];
+                        updateBandInfo(label);
+                    }
+                }
+            }
+        });
+
+        function updateBandInfo(label) {
+            const data = bandDetails[label];
+            if (data) {
+                document.getElementById('band-title').innerText = data.title;
+                document.getElementById('band-freq').innerText = `Frequency Range: ${data.range}`;
+                document.getElementById('band-desc').innerText = data.desc;
+                document.getElementById('band-use').innerText = data.use;
+                document.getElementById('band-prop').innerText = data.prop;
+            }
+        }
+
+        // Initialize Exam Chart
+        const ctxExam = document.getElementById('examChart').getContext('2d');
+        new Chart(ctxExam, {
+            type: 'doughnut',
+            data: {
+                labels: ['Basic Electronics', 'Radio Regulations & Rules'],
+                datasets: [{
+                    data: [50, 50], // Roughly equal weightage
+                    backgroundColor: ['#d97706', '#475569'], // Amber, Slate
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // --- 3. Calculator Logic ---
+        function calculateWavelength(source) {
+            const freqInput = document.getElementById('freqInput');
+            const waveInput = document.getElementById('waveInput');
+            const hintBox = document.getElementById('antenna-hint');
+            
+            let f, w;
+
+            if (source === 'freq') {
+                f = parseFloat(freqInput.value);
+                if (f > 0) {
+                    w = 300 / f;
+                    waveInput.value = w.toFixed(2);
+                } else {
+                    waveInput.value = '';
+                }
+            } else {
+                w = parseFloat(waveInput.value);
+                if (w > 0) {
+                    f = 300 / w;
+                    freqInput.value = f.toFixed(2);
+                } else {
+                    freqInput.value = '';
+                }
+            }
+
+            // Generate contextual hint
+            if (f) {
+                hintBox.classList.remove('hidden');
+                if (f < 30) {
+                    hintBox.innerHTML = `<strong>HF Band:</strong> A "Dipole" antenna for this frequency would be roughly <strong>${(w/2).toFixed(1)} meters</strong> long (half-wavelength). That's big!`;
+                } else if (f >= 100 && f < 300) {
+                    hintBox.innerHTML = `<strong>VHF Band:</strong> An antenna here is only about <strong>${(w/2 * 100).toFixed(0)} cm</strong>. Perfect for handhelds and cars.`;
+                } else {
+                    hintBox.innerHTML = `<strong>UHF+:</strong> Very small antennas. High precision required.`;
+                }
+            } else {
+                hintBox.classList.add('hidden');
+            }
+        }
+
+        // --- 4. Tab Logic ---
+        function switchGradeTab(grade) {
+            // Reset Styles
+            document.getElementById('tab-restricted').classList.remove('active-tab', 'text-stone-600');
+            document.getElementById('tab-restricted').classList.add('text-stone-400');
+            
+            document.getElementById('tab-general').classList.remove('active-tab', 'text-stone-600');
+            document.getElementById('tab-general').classList.add('text-stone-400');
+            
+            // Hide Content
+            document.getElementById('content-restricted').classList.add('hidden');
+            document.getElementById('content-general').classList.add('hidden');
+
+            // Activate Selection
+            document.getElementById(`tab-${grade}`).classList.add('active-tab', 'text-stone-600');
+            document.getElementById(`tab-${grade}`).classList.remove('text-stone-400');
+            document.getElementById(`content-${grade}`).classList.remove('hidden');
+        }
+
+        // Initialize default view
+        updateBandInfo('2m (VHF)');
+    </script>
+</body>
+</html>
